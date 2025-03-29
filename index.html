@@ -90,20 +90,33 @@
       let unknownBolinhas = [];
 
       function euclideanDistance(x1, y1, x2, y2) {
-        return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+        return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2); // √((x1 - x2)² + (y1 - y2)²)
       }
 
       function classifyBolinha(x, y, k = 3) {
         let distances = knownBolinhas.map((b) => ({
+          /*
+          Para cada bolinha conhecida, calcula a distância
+          euclidiana entre a bolinha desconhecida e os pontos conhecidos.
+          */
           distance: euclideanDistance(x, y, b.x, b.y),
-          color: b.color,
+          color: b.color, //
         }));
+
+        /*
+        Ordena as distancias em ordem crescente.
+        O primeiro k elementos da lista representam as k distancias mais proximas.
+        */
         distances.sort((a, b) => a.distance - b.distance);
         let nearest = distances.slice(0, k);
         let colorCounts = {};
         nearest.forEach((n) => {
           colorCounts[n.color] = (colorCounts[n.color] || 0) + 1;
         });
+
+        /*
+        Retorna a cor que aparece mais vezes nas k bolinhas mais proximas.
+        */
         return Object.keys(colorCounts).reduce((a, b) =>
           colorCounts[a] >= colorCounts[b] ? a : b
         );
