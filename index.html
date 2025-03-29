@@ -69,7 +69,7 @@
           ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
           ctx.fillStyle = this.color;
           ctx.fill();
-          ctx.strokeStyle = this.isKnown ? "black" : "gray";
+          ctx.strokeStyle = this.isKnown ? "black" : "gray"; // Cor da borda: preta -> conhecidas, cinza -> desconhecidas
           ctx.lineWidth = 2;
           ctx.stroke();
         }
