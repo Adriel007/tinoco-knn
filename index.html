@@ -78,7 +78,55 @@
           this.color = color;
           this.draw();
         }
+
+        animateLineDistance(callback) {
+          const connections = knownBolinhas.map((b) => ({
+            x1: this.x,
+            y1: this.y,
+            x2: b.x,
+            y2: b.y,
+          }));
+
+          const duration = 1_000;
+          let start = null;
+
+          const animate = (timestamp) => {
+            if (!start) start = timestamp;
+            let progress = (timestamp - start) / duration;
+
+            knownBolinhas.forEach((b) => b.draw());
+            unknownBolinhas.forEach((b) => b.draw());
+
+            ctx.strokeStyle = "gray";
+            ctx.lineWidth = 1;
+            ctx.globalAlpha = 0.5;
+            connections.forEach((line) => {
+              ctx.beginPath();
+              ctx.moveTo(line.x1, line.y1);
+              ctx.lineTo(
+                line.x1 + (line.x2 - line.x1) * Math.min(progress, 1),
+                line.y1 + (line.y2 - line.y1) * Math.min(progress, 1)
+              );
+              ctx.stroke();
+            });
+            ctx.globalAlpha = 1;
+
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              callback();
+            }
+          };
+
+          requestAnimationFrame(animate);
+        }
       }
+
+      /*
+      
+      PARTE DE EXPLICAR O CÁLCULO |
+                                  V
+      */
 
       let knownBolinhas = [
         new Bolinha(100, 100, "red", true, 20),
@@ -96,17 +144,17 @@
       function classifyBolinha(x, y, k = 3) {
         let distances = knownBolinhas.map((b) => ({
           /*
-          Para cada bolinha conhecida, calcula a distância
-          euclidiana entre a bolinha desconhecida e os pontos conhecidos.
-          */
+                Para cada bolinha conhecida, calcula a distância
+                euclidiana entre a bolinha desconhecida e os pontos conhecidos.
+                */
           distance: euclideanDistance(x, y, b.x, b.y),
           color: b.color, //
         }));
 
         /*
-        Ordena as distancias em ordem crescente.
-        O primeiro k elementos da lista representam as k distancias mais proximas.
-        */
+              Ordena as distancias em ordem crescente.
+              O primeiro k elementos da lista representam as k distancias mais proximas.
+              */
         distances.sort((a, b) => a.distance - b.distance);
         let nearest = distances.slice(0, k);
         let colorCounts = {};
@@ -115,12 +163,18 @@
         });
 
         /*
-        Retorna a cor que aparece mais vezes nas k bolinhas mais proximas.
-        */
+              Retorna a cor que aparece mais vezes nas k bolinhas mais proximas.
+              */
         return Object.keys(colorCounts).reduce((a, b) =>
           colorCounts[a] >= colorCounts[b] ? a : b
         );
       }
+
+      /*
+                                  ^  
+      PARTE DE EXPLICAR O CÁLCULO |
+    
+      */
 
       function delay(ms) {
         return new Promise((resolve) => setTimeout(resolve, ms));
@@ -177,8 +231,10 @@
         }
 
         for (let i = 0; i < n; i++) {
-          unknownBolinhas[i].paint(colors[i]);
-          await delay(100);
+          unknownBolinhas[i].animateLineDistance(() => {
+            unknownBolinhas[i].paint(colors[i]);
+          });
+          await delay(300);
         }
 
         btn.disabled = false;
